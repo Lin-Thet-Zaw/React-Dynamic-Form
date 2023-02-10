@@ -1,0 +1,281 @@
+import React, { useEffect, useState } from 'react'
+import { Form, Button, Row, Col, Spinner } from 'react-bootstrap';
+import axios from 'axios';
+const RequestTravel = () => {
+
+    const [forms, setForms] = useState([
+        {
+            selectedValues: [],
+            actno: '',
+            start_date: '',
+            end_date: '',
+            departure_location: '',
+            phone_number: '',
+            driver: '',
+            vehicle_type:'',
+            vehicle_number: '',
+            description:''
+        },
+    ]);
+
+    const handleAddForm = () => {
+        setForms([...forms, {
+            selectedValues: [],
+            actno: '',
+            start_date: '',
+            end_date: '',
+            departure_location: '',
+            phone_number: '',
+            driver: '',
+            vehicle_type:'',
+            vehicle_number: '',
+            description:''}]);
+    };
+
+    const handleRemoveForm = (index) => {
+        const newForms = [...forms];
+        newForms.splice(index, 1);
+        setForms(newForms);
+    };
+    
+    const [options, setOptions] = useState([]);
+    const [isactnos, setIsActnos] = useState([])
+
+    useEffect(async()=>{
+      await axios.get('/agency/responses')
+      .then(res=>{
+        setIsActnos(res.data);
+      })
+      .catch(err=>{
+          console.log(err.message);
+      })
+
+      await axios.get('/agency/travellers/list/0') //get travellers with status 0 (no from travellers)
+      .then(res=>{
+          setOptions(res.data.data)
+          console.log(res.data.data)
+      })
+      .catch(err=>{
+          console.log(err.message)
+      })
+  }, []);
+  
+    
+  const handleSelectChange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].selectedValues = event.target.value;
+    setForms(newForms);
+    };
+
+  const handleSelectActNoChange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].actno = event.target.value;
+    setForms(newForms);
+    };
+
+  const handleStartDateChange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].start_date = event.target.value;
+    setForms(newForms);
+  };
+
+  const handleEndDateChange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].end_date = event.target.value;
+    setForms(newForms);
+  };
+
+    
+  const handleDepatureLocationChange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].departure_location = event.target.value;
+    setForms(newForms);
+    };
+
+  const handlePhoneNumberhange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].phone_number = event.target.value;
+    setForms(newForms);
+  };
+    
+  const handleDriverhange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].driver = event.target.value;
+    setForms(newForms);
+    };
+    
+  const handleVehicelTypehange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].vehicle_type = event.target.value;
+    setForms(newForms);
+  };
+  
+  const handleVehicelumberhange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].vehicle_number = event.target.value;
+    setForms(newForms);
+  };
+  
+  const handleDescriptionhange = (formIndex) => (event) => {
+    const newForms = [...forms];
+    newForms[formIndex].description = event.target.value;
+    setForms(newForms);
+  };
+    const handleSubmit = (index, event) => {
+      event.preventDefault();
+      axios.post('/agency/travel', { form: forms[index] })
+          .then((response) => {
+            console.log(forms)
+          console.log(response.data);
+        })
+        .catch((error) => {
+            console.error(error);
+            console.log(forms)
+        });
+    };
+  
+    
+
+    return (
+    <div className="card">
+            <div className="card-body">
+            {forms.map((form, index) => (
+                      <Form  key={index} onSubmit={(event) => handleSubmit(index, event)}>
+                      <Row className="mb-3">
+                      <Form.Group as={Col} controlId="formGridPassword">
+                    <Form.Label>Select Travellers Name</Form.Label>
+                    <Form.Select  value={form.actno}onChange={handleSelectActNoChange(index)}
+  
+            >
+                      
+                        {
+                            isactnos && isactnos.map((actno, index)=>{
+                                return <option value={actno.id} key={index}>{actno.act_no}</option>
+                     
+                            })
+                                }
+                  </Form.Select>
+                            {errors && errors.option && (<Form.Text className="text-danger">
+                            {errors.option}
+                        </Form.Text>)}
+                        </Form.Group>
+                        <Form.Group as={Col} controlId="formGridPassword">
+                    <Form.Label>Select Travellers Name</Form.Label>
+                    <Form.Select multiple={true}  value={form.selectedValues}onChange={handleSelectChange(index)}
+  
+            >
+                      
+                        {
+                            options && options.map((option, index)=>{
+                                return <option value={option.id} key={index}>{option.name}</option>
+                     
+                            })
+                                }
+                  </Form.Select>
+                            {errors && errors.option && (<Form.Text className="text-danger">
+                            {errors.option}
+                        </Form.Text>)}
+                        </Form.Group>        
+                    
+                    </Row>
+                    
+
+            <Row className="mb-3">
+                <Form.Group as={Col} controlId="formGridLocation">
+                <Form.Label>Departure Date</Form.Label>
+                <Form.Control type="date" name="start_date" value={form.start_date}  onChange={handleStartDateChange(index)} />
+                    {errors && errors.start_date &&
+                    (<Form.Text className="text-danger">
+                        {errors.start_date}
+                    </Form.Text>)}
+                </Form.Group>
+
+                <Form.Group as={Col} controlId="formGridPassword">
+                <Form.Label>Arrival Date</Form.Label>
+                <Form.Control type="date" name="end_date" value={form.end_date} onChange={handleEndDateChange(index)} />
+                    {errors && errors.end_date &&
+                    (<Form.Text className="text-danger">
+                        {errors.end_date}
+                    </Form.Text>)}
+                </Form.Group>
+            </Row>
+
+            <Row className="mb-3">
+                <Form.Group as={Col} controlId="formGridLocation">
+                <Form.Label>Departure Address</Form.Label>
+                <Form.Control type="text" placeholder="Enter departure location" name="departure_location" value={form.departure_location} onChange={handleDepatureLocationChange(index)}/>
+                    {errors && errors.departure_location &&
+                    (<Form.Text className="text-danger">
+                        {errors.departure_location}
+                    </Form.Text>)}
+                </Form.Group>
+
+                <Form.Group as={Col} controlId="formGridAddress1">
+                <Form.Label>Phone Number</Form.Label>
+                <Form.Control placeholder="Enter phone number" name="phone_number"  value={form.phone_number} onChange={handlePhoneNumberhange(index)}/>
+                        {errors && errors.phone_number &&
+                    (<Form.Text className="text-danger">
+                        {errors.phone_number}
+                    </Form.Text>)}
+                 </Form.Group>
+            </Row>
+
+            
+
+            <Row className="mb-3">
+                <Form.Group as={Col} controlId="formGridLocation">
+                <Form.Label>Driver Name</Form.Label>
+                <Form.Control type="text" placeholder="Enter driver name" name="driver" value={form.driver} onChange={handleDriverhange(index)}/>
+                        {errors && errors.driver &&
+                    (<Form.Text className="text-danger">
+                        {errors.driver}
+                    </Form.Text>)}
+                </Form.Group>
+
+                <Form.Group as={Col} controlId="formGridPassword">
+                <Form.Label>Types Of Vehicle and Color</Form.Label>
+                <Form.Control type="text" placeholder="Car, Blue" name="vehicle_type"value={form.vehicle_type} onChange={handleVehicelTypehange(index)}/>
+                        {errors && errors.vehicle_type &&
+                    (<Form.Text className="text-danger">
+                        {errors.vehicle_type}
+                    </Form.Text>)}
+                </Form.Group>
+
+                <Form.Group as={Col} controlId="formGridPassword">
+                <Form.Label>Vehicle Number <small className='optional'>(Optional)</small></Form.Label>
+                <Form.Control type="text" placeholder="Enter vehicle number" name="vehicle_number"value={form.vehicle_number} onChange={handleVehicelumberhange(index)}/>
+                    {errors && errors.vehicle_number &&
+                     (<Form.Text className="text-danger">
+                        {errors.vehicle_number}
+                    </Form.Text>)}
+                </Form.Group>
+            </Row>
+
+            <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
+                <Form.Label>Travel Reason ()</Form.Label>
+                <Form.Control as="textarea" rows={3} placeholder="Enter travel reason" name="description" value={form.description}onChange={handleDescriptionhange(index)}/>
+                    {errors && errors.description &&
+                    (<Form.Text className="text-danger">
+                        {errors.description}
+                    </Form.Text>)}
+            </Form.Group>
+
+         <Button variant="danger" type="submit">         
+              Submit <i className="bi bi-send"></i>
+            </Button>
+            <Button variant="primary"  type="button" onClick={() => handleRemoveForm(index)}>
+            Remove Form
+          </Button>
+                </Form>
+            ))}
+              <Button variant="success"  type="button" onClick={handleAddForm}>
+        Add Form
+      </Button>
+            </div>
+        </div>
+
+        
+  )
+}
+
+export default RequestTravel
